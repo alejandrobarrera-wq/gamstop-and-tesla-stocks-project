@@ -70,6 +70,6 @@ print(gme.info)
 #Extraer la información histórica (máximo periodo disponible)
 gme_data = gme.history(period="max")
 
-# Mostrar las primeras filas del DataFrame
+#Mostrar las primeras filas del DataFrame
 print("GameStop stock data:")
 print(gme_data.head())
