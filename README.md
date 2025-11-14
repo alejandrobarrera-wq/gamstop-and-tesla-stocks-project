@@ -1,5 +1,3 @@
-gamstop-and-tesla-stocks-project
-final examn the fifth course of coursera
 
 #Instalar librerías necesarias
 !pip install yfinance
@@ -7,6 +5,7 @@ final examn the fifth course of coursera
 !pip install nbformat
 !pip install --upgrade plotly
 !pip install lxml
+
 
 #Importar librerías
 import yfinance as yf
@@ -16,6 +15,8 @@ from bs4 import BeautifulSoup
 from io import StringIO
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 #Descargar datos de Tesla
 tesla = yf.Ticker("TSLA")
@@ -73,3 +74,32 @@ gme_data = gme.history(period="max")
 #Mostrar las primeras filas del DataFrame
 print("GameStop stock data:")
 print(gme_data.head())
+
+plt.figure(figsize=(12,5))
+sns.lineplot(data=tesla_data, x="Date", y="Close")
+plt.title("Tesla Closing Price (Último año)")
+plt.xlabel("Fecha")
+plt.ylabel("Precio de cierre (USD)")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+#--------- 5. Gráfica de ingresos trimestrales Tesla ---
+plt.figure(figsize=(12,5))
+sns.barplot(data=tesla_revenue, x="Date", y="Revenue", palette="coolwarm")
+plt.title("Tesla Quarterly Revenue")
+plt.xlabel("Fecha")
+plt.ylabel("Ingresos (USD)")
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.show()
+
+#--------- 6. Gráfica de precios históricos GME --------
+plt.figure(figsize=(12,5))
+sns.lineplot(data=gme_data, x="Date", y="Close", color="purple")
+plt.title("GameStop Closing Price (Desde inicio)")
+plt.xlabel("Fecha")
+plt.ylabel("Precio de cierre (USD)")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
