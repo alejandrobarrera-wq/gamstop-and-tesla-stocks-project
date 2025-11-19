@@ -107,9 +107,6 @@ print(gme_data.head())
 
 
 
-#====================================================================
-
-
 #--------- 5. Gráfica de ingresos anuales de Tesla ---
 plt.figure(figsize=(12,5))
 sns.barplot(data=tesla_revenue, x="Date", y="Revenue", palette="coolwarm")
@@ -119,7 +116,6 @@ plt.ylabel("Ingresos en millones (USD)")
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
-
 
 #--------- 4. Gráfica de cierre de Tesla -----------
 plt.figure(figsize=(12,5))
@@ -158,10 +154,11 @@ plt.show()
 #--------- 6. Gráfica de precios históricos GME --------
 plt.figure(figsize=(12,5))
 sns.lineplot(data=gme_data, x="Date", y="Close", color="purple")
-plt.title("GameStop yearly Closing Price (Desde inicio)")
+plt.title("GameStop Last Years Closing Price (Desde inicio)")
 plt.xlabel("Fecha")
 plt.ylabel("Precio de cierre por trimestre (USD)")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
 
