@@ -50,6 +50,7 @@ tesla_revenue["Revenue"] = tesla_revenue["Revenue"].replace(r"[\$,]", "", regex=
 
 #Convertir Revenue a tipo numérico
 tesla_revenue["Revenue"] = pd.to_numeric(tesla_revenue["Revenue"])
+tesla_revenue["Date"] = tesla_revenue["Date"].astype(int)
 
 #Reiniciar índice
 tesla_revenue.reset_index(drop=True, inplace=True)
@@ -61,53 +62,9 @@ print(tesla_revenue.head())
 print("\nÚltimas filas:")
 print(tesla_revenue.tail())
 
-#EXTRAER INGRESOS REALES DE GAMESTOP (TABLA 2)
-gme_revenue = tables[1]   # la segunda tabla es GameStop
+#Gráfica de ingresos anuales de Tesla]
+tesla_revenue_sorted = tesla_revenue.sort_values("Date")
 
-# Renombrar columnas
-gme_revenue.columns = ["Date", "Revenue"]
-
-# Eliminar filas vacías o con guiones
-gme_revenue.dropna(inplace=True)
-gme_revenue = gme_revenue[gme_revenue["Revenue"] != "—"]
-
-# Limpiar formato de Revenue
-gme_revenue["Revenue"] = gme_revenue["Revenue"].replace(r"[\$,]", "", regex=True)
-
-# Convertir a numérico
-gme_revenue["Revenue"] = pd.to_numeric(gme_revenue["Revenue"])
-
-# Convertir columna Date a datetime
-gme_revenue["Date"] = pd.to_datetime(gme_revenue["Date"])
-
-# Filtrar desde el año 2012
-gme_revenue = gme_revenue[gme_revenue["Date"].dt.year >= 2012]
-
-# Ordenar de menor a mayor por fecha
-gme_revenue = gme_revenue.sort_values("Date")
-
-# Reiniciar índice
-gme_revenue.reset_index(drop=True, inplace=True)
-
-print("\nGameStop Quarterly Revenue (desde 2012):")
-print(gme_revenue.head())
-print(gme_revenue.tail())
-#Crear un objeto ticker para GameStop
-gme = yf.Ticker("GME")
-
-#muestra la informacion en formato json para ver si funciono
-print(gme.info)
-
-#Extraer la información histórica (máximo periodo disponible)
-gme_data = gme.history(period="1y")
-
-#Mostrar las primeras filas del DataFrame
-print("GameStop stock data:")
-print(gme_data.head())
-
-
-
-#--------- 5. Gráfica de ingresos anuales de Tesla ---
 plt.figure(figsize=(12,5))
 sns.barplot(data=tesla_revenue, x="Date", y="Revenue", palette="coolwarm")
 plt.title("Tesla yearly Revenue")
@@ -117,7 +74,8 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
 
-#--------- 4. Gráfica de cierre de Tesla -----------
+
+#Gráfica de cierre de Tesla
 plt.figure(figsize=(12,5))
 sns.lineplot(data=tesla_data, x="Date", y="Close")
 plt.title("Tesla Closing Price por trimestre (Último año)")
@@ -128,37 +86,69 @@ plt.tight_layout()
 plt.show()
 
 
+gme_url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/stock.html"
+gme_response = requests.get(gme_url)
+gme_html_data = gme_response.text
+print("GameStop HTML data successfully fetched.")
+print(f"First 500 characters of HTML data: {gme_html_data[:500]}")
 
-# Convertir fecha a datetime
+gme_soup = BeautifulSoup(gme_html_data, "html.parser")
+print("GameStop HTML parsed with BeautifulSoup.")
+print(f"\nPreview of parsed HTML (first 100 chars):\n{gme_soup.prettify()[:100]}")
+#Extraer las tablas
+gme_tables = pd.read_html(StringIO(str(gme_soup)))
+
+#Identificar cuál tabla contiene Revenue
+for i, table in enumerate(gme_tables):
+    print(f"\nTabla {i}")
+    print(table.head())
+    print(table.columns)
+
+#Suponiendo que la correcta es la tabla 1 (ajústalo después de imprimir)
+gme_revenue = gme_tables[1].copy()
+
+#Renombrar columnas asegurado
+gme_revenue.columns = ["Date", "Revenue"]
+
+#Limpiar con regex
+gme_revenue["Revenue"] = gme_revenue["Revenue"]#revisar
+
+gme_revenue.dropna(inplace=True)
+gme_revenue = gme_revenue[gme_revenue["Revenue"] != "—"]
+gme_revenue["Revenue"] = gme_revenue["Revenue"].str.replace(r'[$,]', '', regex=True)
+gme_revenue["Revenue"] = pd.to_numeric(gme_revenue["Revenue"])
+gme_revenue.reset_index(drop=True, inplace=True)
+
+print("Cleaned GameStop Quarterly Revenue:")
+print(gme_revenue.head())
+print("\nData types after cleaning:")
+
+
+print(gme_revenue.dtypes)
+print(gme_revenue.head())
+print("\nData types after cleaning:")
+print(gme_revenue.dtypes)
+
+#Gráfica de ingresos anuales de GameStop 
+
+# Ordenar GameStop por fecha
 gme_revenue["Date"] = pd.to_datetime(gme_revenue["Date"])
+gme_revenue_sorted = gme_revenue.sort_values("Date")
 
-# Filtrar desde 2012
-gme_revenue = gme_revenue[gme_revenue["Date"] >= "2012-01-01"]
 
-# Convertir la fecha a solo AÑO
-gme_revenue["Date"] = gme_revenue["Date"].dt.year
-
-# Ordenar
-gme_revenue = gme_revenue.sort_values("Date")
-
-# --------- Gráfica IGUAL a la de Tesla ----------
-plt.figure(figsize=(12,5))
-sns.barplot(data=gme_revenue, x="Date", y="Revenue", palette="coolwarm", errorbar=None)
-plt.title("GameStop yearly Revenue (desde 2012)")
-plt.xlabel("Fecha")
-plt.ylabel("Ingresos (USD)")
+# Gráfica ordenada
+plt.figure(figsize=(12, 6))
+sns.barplot(
+    x='Date',
+    y='Revenue',
+    data=gme_revenue_sorted,
+    palette='viridis',
+    hue='Date',
+    legend=False
+)
+plt.title('GameStop Quarterly Revenue')
+plt.xlabel('Date')
+plt.ylabel('Revenue (Millions of USD)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
-
-#--------- 6. Gráfica de precios históricos GME --------
-plt.figure(figsize=(12,5))
-sns.lineplot(data=gme_data, x="Date", y="Close", color="purple")
-plt.title("GameStop Last Years Closing Price (Desde inicio)")
-plt.xlabel("Fecha")
-plt.ylabel("Precio de cierre por trimestre (USD)")
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
-
-
